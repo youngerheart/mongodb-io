@@ -27,7 +27,7 @@ The second argument in `DBIO.export` or `DBIO.import`, params and default value 
 var filePath = await DBIO.export(dbs, config); // this is a `tar.gz` file
 ```
 
-if `dbs` is undefined, will export all dbs. `dbs` is seems like:
+if `dbs` is not a array, will export all dbs. `dbs` is seems like:
 
 ```
 ['dbName1', {name: 'dbName2', collections}, ...]
@@ -37,7 +37,7 @@ the array of database names, or database settings you want to export.
 `collections` is seems like:
 
 ```
-['collectionName1', {name: 'collectionName1', query: {"_id": "111"}, fields: 'field1,field2'}, ...]
+['collectionName1', {name: 'collectionName2', query: {_id: 111}}, ...]
 ```
 
 the array of collection names, or collection settings you want to export.
