@@ -1,6 +1,6 @@
 {
   "name": "mongodb-io",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "export & import mongodb documents",
   "main": "index.js",
   "keywords": [
@@ -21,7 +21,7 @@
     "type": "git",
     "url": "git+https://github.com/youngerheart/mongodb-io.git"
   },
-  "dependencies": {
+  "devDependencies": {
     "babel-core": "^6.10.4",
     "babel-plugin-add-module-exports": "^0.2.1",
     "babel-plugin-transform-async-to-generator": "^6.8.0",
