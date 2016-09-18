@@ -1,6 +1,6 @@
 // import fs from 'fs';
 import {execSync} from 'child_process';
-import {platform} from 'process';
+// import {platform} from 'process';
 
 const setConfig = (config = {}) => {
   var defaultConfig = {
@@ -33,7 +33,7 @@ export default {
       if (password) cmd += ` -p ${password}`;
       if (dbName) cmd += ` -d ${dbName}`;
       if (collectionName) cmd += ` -c ${collectionName}`;
-      if (query) cmd += ` -q ${JSON.stringify(query)}`;
+      if (query) cmd += ` -q '${JSON.stringify(query)}'`;
       return cmd;
     };
 
@@ -62,21 +62,17 @@ export default {
         try {
           execSync(cmds[index]);
         } catch (err) {
-          reject(err);
-          break;
         }
       }
-      var tarDir = `/tmp/${config.out}.tar.gz`;
-      var docDir = `/tmp/${config.out}`;
       try {
         // 打包为 tar.gz
-        execSync(`tar zcvf ${tarDir} ${docDir}`);
+        execSync(`tar zcvf ${config.out}.tar.gz ${config.out}`, {cwd: '/tmp'});
         // 删除文件夹
-        execSync(`rm -rf ${docDir}`);
+        execSync(`rm -rf ${config.out}`, {cwd: '/tmp'});
       } catch (err) {
         reject(err);
       }
-      resolve(tarDir);
+      resolve(`/tmp/${config.out}.tar.gz`);
     });
   },
   import(filePath, config) {
@@ -88,12 +84,8 @@ export default {
     if (drop) cmd += ' --drop';
     return new Promise((resolve, reject) => {
       try {
-        var fileName = filePath.split('/');
-        var fileName = fileName[fileName.length - 1].split('.')[0];
         // 解压到当前目录
-        if (platform === 'darwin') {
-          execSync(`tar -zxvf ${filePath}; mv -f tmp/${fileName} .; rm -rf tmp`, {cwd: '/tmp'});
-        } else execSync(`tar zxvf ${filePath} -C /tmp/${fileName}`);
+        execSync(`tar -zxvf ${filePath}`, {cwd: '/tmp'});
         execSync(cmd, {cwd: '/tmp'});
         resolve();
       } catch (err) {
