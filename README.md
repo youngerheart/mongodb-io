@@ -1,3 +1,5 @@
+[![NPM version](https://img.shields.io/npm/v/mongodb-io.svg)](https://www.npmjs.com/package/mongodb-io) [![Downloads](https://img.shields.io/npm/dm/mongodb-io.svg)](http://badge.fury.io/js/mongodb-io)
+
 # mongodb-io
 export & import mongodb documents, base on `mongodump` and `mongorestore`.
 
@@ -17,7 +19,8 @@ The second argument in `DBIO.export` or `DBIO.import`, params and default value 
   port: 27017,
   user,
   password,
-  out: 'dump' // export filename
+  out: 'dump', // export filename
+  drop: false // Before restoring the collections from the dumped backup, drops the collections from the target database.
 }
 ```
 

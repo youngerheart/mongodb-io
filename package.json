@@ -1,21 +1,26 @@
 {
   "name": "mongodb-io",
-  "version": "0.0.0",
-  "description": "export & import mongodb documents, base on mongodump",
-  "private": true,
-  "main": "dist/index.js",
+  "version": "0.0.1",
+  "description": "export & import mongodb documents",
+  "main": "index.js",
+  "keywords": [
+    "mongodb",
+    "mongodump",
+    "mongorestore"
+  ],
+  "author": "youngerheart",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/youngerheart/mongodb-io/issues"
+  },
+  "homepage": "https://github.com/youngerheart/mongodb-io",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eleme/grail.git"
+    "url": "git+https://github.com/youngerheart/mongodb-io.git"
   },
-  "author": "ge.yang@ele.me",
-  "bugs": {
-    "url": "https://github.com/eleme/grail/issues"
-  },
-  "homepage": "https://github.com/eleme/grail#readme",
   "dependencies": {
     "babel-core": "^6.10.4",
     "babel-plugin-add-module-exports": "^0.2.1",

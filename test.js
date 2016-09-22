@@ -1,9 +1,13 @@
 import DBIO from './src/index';
 
-const dbs = ['jobs', {name: 'esrc'}]
+const dbs = [{
+  name: 'jobs',
+  collections: [{name: 'resumes', query: {practice: true}}]
+}];
 
-const config = {}
-
-DBIO.export(dbs, config).then((filePath) => {
-
+DBIO.export(dbs).then((filePath) => {
+  process.stderr.write('export is ok\n');
+  DBIO.import('/tmp/dump.tar.gz').then(() => {
+    process.stderr.write('import is ok\n');
+  });
 });
