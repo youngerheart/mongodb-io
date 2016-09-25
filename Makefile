@@ -4,11 +4,7 @@ install:
 	@eslint --fix entry.js src/*.js src/**/*.js
 
 dev: install
-	@nodemon entry.js
+	@nodemon test.js
 
-deploy: install
-	@babel src --out-dir dist
-	@cp package.json README.md dist
-
-publish: deploy
-	@cd dist && npm publish && cd ..
+publish: install
+	@npm publish

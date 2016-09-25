@@ -1,6 +1,4 @@
-// import fs from 'fs';
-import {execSync} from 'child_process';
-// import {platform} from 'process';
+const {exec, execSync} = require('child_process');
 
 const setConfig = (config = {}) => {
   var defaultConfig = {
@@ -19,7 +17,7 @@ const setConfig = (config = {}) => {
 
 const is = (obj, type) => typeof obj === type;
 
-export default {
+module.exports = {
   // ['dbName1', {name: 'dbName2', collections}, ...]
   // ['collectionName1', {name: 'collectionName1', query: {_id: 111}, ...]
   export(dbs, config) {
@@ -33,7 +31,7 @@ export default {
       if (password) cmd += ` -p ${password}`;
       if (dbName) cmd += ` -d ${dbName}`;
       if (collectionName) cmd += ` -c ${collectionName}`;
-      if (query) cmd += ` -q '${JSON.stringify(query)}'`;
+      if (query) cmd += ` -q '${query}'`;
       return cmd;
     };
 
@@ -66,9 +64,9 @@ export default {
       }
       try {
         // 打包为 tar.gz
-        execSync(`tar zcvf ${config.out}.tar.gz ${config.out}`, {cwd: '/tmp'});
+        execSync(`tar zcvf '${config.out}.tar.gz' '${config.out}'`, {cwd: '/tmp'});
         // 删除文件夹
-        execSync(`rm -rf ${config.out}`, {cwd: '/tmp'});
+        execSync(`rm -rf '${config.out}'`, {cwd: '/tmp'});
       } catch (err) {
         reject(err);
       }
@@ -78,19 +76,21 @@ export default {
   import(filePath, config) {
     config = setConfig(config);
     var {host, port, user, password, out, drop} = config;
-    var cmd = `mongorestore -h ${host} --port ${port} /tmp/${out}`;
-    if (user) cmd += ` -u ${user}`;
-    if (password) cmd += ` -p ${password}`;
+    var cmd = `mongorestore -h '${host}' --port '${port}' '/tmp/${out}'`;
+    if (user) cmd += ` -u '${user}'`;
+    if (password) cmd += ` -p '${password}'`;
     if (drop) cmd += ' --drop';
     return new Promise((resolve, reject) => {
-      try {
-        // 解压到当前目录
-        execSync(`tar -zxvf ${filePath}`, {cwd: '/tmp'});
-        execSync(cmd, {cwd: '/tmp'});
-        resolve();
-      } catch (err) {
-        reject(err);
-      }
+      // 解压到当前目录
+      exec(`tar -zxvf '${filePath}'`, {cwd: '/tmp'}, (err, out, stderr) => {
+        process.stderr.write(out + stderr + '\n');
+        if (err) reject(err);
+        exec(cmd, {cwd: '/tmp'}, (err, out, stderr) => {
+          process.stderr.write(out + stderr + '\n');
+          if (err) reject(err);
+          resolve();
+        });
+      });
     });
   }
 };

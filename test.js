@@ -1,8 +1,8 @@
-import DBIO from './src/index';
+const DBIO = require('./src/index');
 
 const dbs = [{
   name: 'jobs',
-  collections: [{name: 'resumes', query: {practice: true}}]
+  collections: [{name: 'resumes', query: '{practice: true}'}]
 }];
 
 DBIO.export(dbs).then((filePath) => {
