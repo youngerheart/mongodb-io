@@ -1,4 +1,5 @@
 const {exec, execSync} = require('child_process');
+const cmdName = process.platform === 'linux' ? ['mongorestore-linux', 'mongodump-linux'] : ['mongorestore', 'mongodump'];
 
 const setConfig = (config = {}) => {
   var defaultConfig = {
@@ -21,8 +22,8 @@ const getCmds = (config, dbs, isImport) => {
   var cmds = [];
   var getCmd = ({dbName, collectionName, query} = {}) => {
     let {host, port, user, password, out} = config;
-    let cmd = `${isImport ? 'mongorestore' : 'mongodump'} -h ${host} --port ${port}`;
-    if (!isImport) cmd += ` -o /tmp/${out}`
+    let cmd = (isImport ? `${__dirname}/../${cmdName[0]}` : `${__dirname}/../${cmdName[1]}`) + ` -h ${host} --port ${port}`;
+    if (!isImport) cmd += ` -o /tmp/${out}`;
     if (user) cmd += ` -u ${user}`;
     if (password) cmd += ` -p ${password}`;
     if (dbName) cmd += ` -d ${dbName}`;

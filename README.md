@@ -3,6 +3,10 @@
 # mongodb-io
 export & import mongodb documents, base on `mongodump` and `mongorestore`.
 
+## Support
+
+only for linux x64 and OS X x64.
+
 ## Usage
 
 ```
