@@ -17,80 +17,85 @@ const setConfig = (config = {}) => {
 
 const is = (obj, type) => typeof obj === type;
 
+const getCmds = (config, dbs, isImport) => {
+  var cmds = [];
+  var getCmd = ({dbName, collectionName, query} = {}) => {
+    let {host, port, user, password, out} = config;
+    let cmd = `${isImport ? 'mongorestore' : 'mongodump'} -h ${host} --port ${port}`;
+    if (!isImport) cmd += ` -o /tmp/${out}`
+    if (user) cmd += ` -u ${user}`;
+    if (password) cmd += ` -p ${password}`;
+    if (dbName) cmd += ` -d ${dbName}`;
+    if (collectionName) cmd += ` -c ${collectionName}`;
+    if (query) cmd += ` -q '${query}'`;
+    return cmd;
+  };
+  if (!Array.isArray(dbs)) {
+    cmds.push(getCmd());
+  } else {
+    dbs.forEach((db) => {
+      if (is(db, 'string')) cmds.push(getCmd({dbName: db}));
+      else if (is(db, 'object')) {
+        let {name: dbName, collections} = db;
+        if (!Array.isArray(collections)) cmds.push(getCmd({dbName}));
+        else {
+          collections.forEach((collection) => {
+            if (is(collection, 'string')) cmds.push(getCmd({dbName, collectionName: collection}));
+            else if (is(collection, 'object')) {
+              let {name: collectionName, query} = collection;
+              cmds.push(getCmd({dbName, collectionName, query}));
+            }
+          });
+        }
+      }
+    });
+  }
+  return cmds;
+};
+
 module.exports = {
   // ['dbName1', {name: 'dbName2', collections}, ...]
   // ['collectionName1', {name: 'collectionName1', query: {_id: 111}, ...]
-  export(dbs, config) {
-    var cmds = [];
+  export({config, dbs} = {}) {
     config = setConfig(config);
-
-    const getCmd = ({dbName, collectionName, query}) => {
-      let {host, port, user, password, out} = config;
-      let cmd = `mongodump -h ${host} -o /tmp/${out} --port ${port}`;
-      if (user) cmd += ` -u ${user}`;
-      if (password) cmd += ` -p ${password}`;
-      if (dbName) cmd += ` -d ${dbName}`;
-      if (collectionName) cmd += ` -c ${collectionName}`;
-      if (query) cmd += ` -q '${query}'`;
-      return cmd;
-    };
-
-    if (!Array.isArray(dbs)) {
-      cmds.push(getCmd());
-    } else {
-      dbs.forEach((db) => {
-        if (is(db, 'string')) cmds.push(getCmd({dbName: db}));
-        else if (is(db, 'object')) {
-          let {name: dbName, collections} = db;
-          if (!Array.isArray(collections)) cmds.push(getCmd({dbName}));
-          else {
-            collections.forEach((collection) => {
-              if (is(collection, 'string')) cmds.push(getCmd({dbName, collectionName: collection}));
-              else if (is(collection, 'object')) {
-                let {name: collectionName, query} = collection;
-                cmds.push(getCmd({dbName, collectionName, query}));
-              }
-            });
-          }
-        }
-      });
-    }
+    var cmds = getCmds(config, dbs);
+    execSync(`rm -rf '${config.out}'`, {cwd: '/tmp'});
     return new Promise((resolve, reject) => {
       for (let index = 0; index < cmds.length; index++) {
         try {
           execSync(cmds[index]);
-        } catch (err) {
-        }
+        } catch (err) {}
       }
-      try {
-        // 打包为 tar.gz
-        execSync(`tar zcvf '${config.out}.tar.gz' '${config.out}'`, {cwd: '/tmp'});
-        // 删除文件夹
-        execSync(`rm -rf '${config.out}'`, {cwd: '/tmp'});
-      } catch (err) {
-        reject(err);
-      }
-      resolve(`/tmp/${config.out}.tar.gz`);
-    });
-  },
-  import(filePath, config) {
-    config = setConfig(config);
-    var {host, port, user, password, out, drop} = config;
-    var cmd = `mongorestore -h '${host}' --port '${port}' '/tmp/${out}'`;
-    if (user) cmd += ` -u '${user}'`;
-    if (password) cmd += ` -p '${password}'`;
-    if (drop) cmd += ' --drop';
-    return new Promise((resolve, reject) => {
-      // 解压到当前目录
-      exec(`tar -zxvf '${filePath}'`, {cwd: '/tmp'}, (err, out, stderr) => {
+      // 打包为 tar.gz
+      exec(`tar zcvf '${config.out}.tar.gz' '${config.out}'`, {cwd: '/tmp'}, (err, out, stderr) => {
         process.stderr.write(out + stderr + '\n');
         if (err) reject(err);
-        exec(cmd, {cwd: '/tmp'}, (err, out, stderr) => {
+        // 删除文件夹
+        exec(`rm -rf '${config.out}'`, {cwd: '/tmp'}, (err, out, stderr) => {
           process.stderr.write(out + stderr + '\n');
           if (err) reject(err);
-          resolve();
+          resolve(`/tmp/${config.out}.tar.gz`);
         });
       });
     });
+  },
+  import({config, dbs} = {}) {
+    config = setConfig(config);
+    var cmds = getCmds(config, dbs, true);
+    var {filePath} = config;
+    return Promise.all(cmds.map((cmd) => {
+      return new Promise((resolve, reject) => {
+        // 解压到当前目录
+        exec(`tar -zxvf '${filePath}'`, {cwd: '/tmp'}, (err, out, stderr) => {
+          process.stderr.write(out + stderr + '\n');
+          if (err) reject(err);
+          exec(cmd, {cwd: '/tmp'}, (err, out, stderr) => {
+            process.stderr.write(out + stderr + '\n');
+            if (err) reject(err);
+            resolve();
+          });
+        });
+      });
+    }));
   }
 };

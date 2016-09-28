@@ -5,9 +5,15 @@ const dbs = [{
   collections: [{name: 'resumes', query: '{practice: true}'}]
 }];
 
-DBIO.export(dbs).then((filePath) => {
+DBIO.export({dbs}).then((filePath) => {
   process.stderr.write('export is ok\n');
-  DBIO.import('/tmp/dump.tar.gz').then(() => {
+  DBIO.import({
+    config: {filePath}
+  }).then(() => {
     process.stderr.write('import is ok\n');
+  }).catch((err) => {
+    process.stderr.write(`${err}\n`);
   });
+}).catch((err) => {
+  process.stderr.write(`${err}\n`);
 });

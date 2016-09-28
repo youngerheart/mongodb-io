@@ -20,14 +20,15 @@ The second argument in `DBIO.export` or `DBIO.import`, params and default value 
   user,
   password,
   out: 'dump', // export filename
-  drop: false // Before restoring the collections from the dumped backup, drops the collections from the target database.
+  drop: false, // Before restoring the collections from the dumped backup, drops the collections from the target database.
+  filePath: '' // path to read `tar.gz` file for mongorestore.
 }
 ```
 
 #### export
 
 ```
-var filePath = await DBIO.export(dbs, config); // this is a `tar.gz` file
+var filePath = await DBIO.export({config, dbs}); // this is a `tar.gz` file
 ```
 
 if `dbs` is not a array, will export all dbs. `dbs` is seems like:
@@ -40,7 +41,7 @@ the array of database names, or database settings you want to export.
 `collections` is seems like:
 
 ```
-['collectionName1', {name: 'collectionName2', query: {_id: 111}}, ...]
+['collectionName1', {name: 'collectionName2', query: '{_id: 111}'}, ...]
 ```
 
 the array of collection names, or collection settings you want to export.
@@ -48,7 +49,7 @@ the array of collection names, or collection settings you want to export.
 #### import
 
 ```
-await DBIO.import(filePath, config); // import a `tar.gz` file
+await DBIO.import({config, dbs});
 ```
 
 #### errors

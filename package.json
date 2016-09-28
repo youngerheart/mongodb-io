@@ -1,6 +1,6 @@
 {
   "name": "mongodb-io",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "export & import mongodb documents",
   "main": "src/index.js",
   "keywords": [
