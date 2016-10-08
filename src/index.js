@@ -20,8 +20,8 @@ const is = (obj, type) => typeof obj === type;
 
 const getCmds = (config, dbs, isImport) => {
   var cmds = [];
-  var getCmd = ({dbName, collectionName, query} = {}) => {
-    let {host, port, user, password, out} = config;
+  var getCmd = ({dbName, collectionName, query, drop} = {}) => {
+    let {host, port, user, password, out, drop: configDrop} = config;
     let cmd = (isImport ? `${__dirname}/../${cmdName[0]}` : `${__dirname}/../${cmdName[1]}`) + ` -h ${host} --port ${port}`;
     if (!isImport) cmd += ` -o /tmp/${out}`;
     if (user) cmd += ` -u ${user}`;
@@ -29,6 +29,8 @@ const getCmds = (config, dbs, isImport) => {
     if (dbName) cmd += ` -d ${dbName}`;
     if (collectionName) cmd += ` -c ${collectionName}`;
     if (query) cmd += ` -q '${query}'`;
+    if ((drop || configDrop) && isImport) cmd += ' --drop';
+    if (dbName && isImport) cmd += ` dump/${dbName}`;
     return cmd;
   };
   if (!Array.isArray(dbs)) {
@@ -37,14 +39,14 @@ const getCmds = (config, dbs, isImport) => {
     dbs.forEach((db) => {
       if (is(db, 'string')) cmds.push(getCmd({dbName: db}));
       else if (is(db, 'object')) {
-        let {name: dbName, collections} = db;
-        if (!Array.isArray(collections)) cmds.push(getCmd({dbName}));
+        let {name: dbName, collections, drop: dbDrop} = db;
+        if (!Array.isArray(collections)) cmds.push(getCmd({dbName, drop: dbDrop}));
         else {
           collections.forEach((collection) => {
-            if (is(collection, 'string')) cmds.push(getCmd({dbName, collectionName: collection}));
+            if (is(collection, 'string')) cmds.push(getCmd({dbName, collectionName: collection, drop: dbDrop}));
             else if (is(collection, 'object')) {
-              let {name: collectionName, query} = collection;
-              cmds.push(getCmd({dbName, collectionName, query}));
+              let {name: collectionName, query, drop} = collection;
+              cmds.push(getCmd({dbName, collectionName, query, drop: typeof drop === 'undefined' ? dbDrop : drop}));
             }
           });
         }

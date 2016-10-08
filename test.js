@@ -8,7 +8,7 @@ const dbs = [{
 DBIO.export({dbs}).then((filePath) => {
   process.stderr.write('export is ok\n');
   DBIO.import({
-    config: {filePath}
+    config: {filePath, drop: true}
   }).then(() => {
     process.stderr.write('import is ok\n');
   }).catch((err) => {

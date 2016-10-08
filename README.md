@@ -56,6 +56,8 @@ the array of collection names, or collection settings you want to export.
 await DBIO.import({config, dbs});
 ```
 
+In each item of dbs or collections you could set `drop`, like that item in config.
+
 #### errors
 
 ```
